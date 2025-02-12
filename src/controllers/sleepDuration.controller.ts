@@ -1,19 +1,22 @@
 import { Request, Response } from "express";
 import { SleepDurationHistory } from "../models/sleepDurationHistory.model";
 
-let sleepDurationHistory: SleepDurationHistory[] = [];
-
-export const getSleepDuration = (req: Request, res: Response) => {
-  res.json(sleepDurationHistory);
+export const getSleepDuration = async (req: Request, res: Response) => {
+  try {
+    const history = await SleepDurationHistory.find({});
+    res.json(history);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 };
 
 export const addSleepDuration = (req: Request, res: Response) => {
-  const { duration, date } = req.body;
-  const newEntry: SleepDurationHistory = {
-    duration,
-    date,
-    id: Math.random().toString(36).substr(2, 9),
-  };
-  sleepDurationHistory.push(newEntry);
-  res.status(201).json(newEntry);
+  try {
+    const { duration, date } = req.body;
+    const newEntry = new SleepDurationHistory({ duration, date });
+    newEntry.save();
+    res.status(201).json(newEntry);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 };
