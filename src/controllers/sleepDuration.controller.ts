@@ -1,22 +1,28 @@
 import { Request, Response } from "express";
-import { SleepDurationHistory } from "../models/sleepDurationHistory.model";
+import prisma from "../prisma";
 
 export const getSleepDuration = async (req: Request, res: Response) => {
   try {
-    const history = await SleepDurationHistory.find({});
+    const history = await prisma.sleepDuration.findMany({});
     res.json(history);
   } catch (err) {
     res.status(500).json(err);
   }
 };
 
-export const addSleepDuration = (req: Request, res: Response) => {
+export const addSleepDuration = async (req: Request, res: Response) => {
   try {
     const { duration, date } = req.body;
-    const newEntry = new SleepDurationHistory({ duration, date });
-    newEntry.save();
-    res.status(201).json(newEntry);
+    await prisma.sleepDuration.create({
+      data: {
+        duration,
+        date,
+      },
+    });
+    res.status(201);
   } catch (err) {
     res.status(500).json(err);
+  } finally {
+    await prisma.$disconnect();
   }
 };

@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { WaterIntakeHistory } from "../models/waterIntake.model";
+import prisma from "../prisma";
 
 export const getWaterIntake = async (req: Request, res: Response) => {
   try {
-    const history = await WaterIntakeHistory.find({});
+    const history = await prisma.waterIntake.findMany({});
     res.json(history);
   } catch (err) {
     res.status(500).json(err);
@@ -13,10 +13,16 @@ export const getWaterIntake = async (req: Request, res: Response) => {
 export const addWaterIntake = async (req: Request, res: Response) => {
   try {
     const { quantity, date } = req.body;
-    const newEntry = new WaterIntakeHistory({ quantity, date });
-    await newEntry.save();
-    res.status(201).json(newEntry);
+    await prisma.waterIntake.create({
+      data: {
+        quantity,
+        date,
+      },
+    });
+    res.status(201);
   } catch (err) {
     res.status(500).json(err);
+  } finally {
+    await prisma.$disconnect();
   }
 };
